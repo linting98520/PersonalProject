@@ -1,0 +1,25 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Logs / temp
+*.log
+TestResults/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Publish output
+publish/
