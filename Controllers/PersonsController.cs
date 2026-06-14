@@ -10,6 +10,7 @@ namespace PersonalInfoApi.Controllers
     public class PersonsController : ControllerBase
     {
         private readonly string _connectionString;
+        private readonly string[] _allowedColumns = new[] { "IdNumber", "Name", "Birthday" };
 
         public PersonsController(IConfiguration config)
         {
@@ -17,15 +18,20 @@ namespace PersonalInfoApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string sortBy = "IdNumber", [FromQuery] string sortOrder = "asc")
         {
             var persons = new List<Person>();
+            if (!_allowedColumns.Contains(sortBy))
+            
+                sortBy = "IdNumber";
+            var direction = sortOrder.ToLower() == "desc" ? "DESC" : "ASC";
 
             using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
-                var sql = "SELECT Id, IdNumber, Name, Gender, Birthday, City, District, Address, Phone FROM Persons";
+                var sql = $"SELECT Id, IdNumber, Name, Gender, Birthday, City, District, Address, Phone FROM Persons ORDER BY {sortBy} {direction}";
+
                 using (var command = new SqlCommand(sql, connection))
                 using (var reader = await command.ExecuteReaderAsync())
                 {

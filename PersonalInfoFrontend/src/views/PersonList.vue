@@ -16,10 +16,19 @@
     <table>
       <thead>
         <tr>
-          <th>身分證字號</th>
-          <th>姓名</th>
+          <th @click="toggleSort('IdNumber')" style="cursor: pointer;">
+            身分證字號
+            <span v-if="sortBy === 'IdNumber'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th @click="toggleSort('Name')" style="cursor: pointer;">
+            姓名
+            <span v-if="sortBy === 'Name'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </th>
           <th>性別</th>
-          <th>生日</th>
+          <th @click="toggleSort('Birthday')" style="cursor: pointer;">
+            生日
+            <span v-if="sortBy === 'Birthday'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </th>
           <th>縣市</th>
           <th>鄉鎮市區</th>
           <th>地址</th>
@@ -101,6 +110,8 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:5119/api/persons'
 
+const sortBy = ref('IdNumber')   // 目前排哪個欄位
+const sortOrder = ref('asc')     // 方向
 const searchKeyword = ref('')
 const errors = ref({})
 const persons = ref([])
@@ -120,7 +131,7 @@ const form = ref({
 
 // 取得所有人員
 const fetchPersons = async () => {
-  const res = await axios.get(API_URL)
+  const res = await axios.get(API_URL, { params: { sortBy: sortBy.value, sortOrder: sortOrder.value } })
   persons.value = res.data
 }
 
@@ -209,6 +220,16 @@ const searchPersons = async () => {
 //清除搜尋
 const cleanSearch = async () => {
   searchKeyword.value = ''
+  fetchPersons()
+}
+
+const toggleSort = (column) => {
+  if (sortBy.value === column){
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  }else{
+    sortBy.value = column
+    sortOrder.value = 'asc'
+  }
   fetchPersons()
 }
 
