@@ -5,6 +5,13 @@
     <!-- 新增按鈕 -->
     <button @click="openAddForm">新增人員</button>
 
+    <!-- 搜尋欄位 -->
+    <div class="search-bar">
+      <input v-model="searchKeyword" placeholder="身分證字號搜尋" @keyup.enter="searchPersons" />
+      <button @click="searchPersons">搜尋</button>
+      <button @click="cleanSearch">清除</button>
+    </div>
+
     <!-- 人員列表 -->
     <table>
       <thead>
@@ -94,6 +101,7 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:5119/api/persons'
 
+const searchKeyword = ref('')
 const errors = ref({})
 const persons = ref([])
 const showForm = ref(false)
@@ -148,10 +156,8 @@ const closeForm = () => {
 // 儲存（新增或編輯）
 const submitForm = async () => {
   errors.value = {}
-
-  const { id, ...rest } = form.value
   const payload = {
-    ...rest,
+    ...form.value,
     birthday: form.value.birthday || null,
   }
 
@@ -161,7 +167,8 @@ const submitForm = async () => {
     if (isEditing.value) {
       await axios.put(`${API_URL}/${form.value.id}`, payload)
     } else {
-      await axios.post(API_URL, payload)
+      const { id, ...createPayload } = payload
+      await axios.post(API_URL, createPayload)
     }
     closeForm()
     fetchPersons()
@@ -172,7 +179,6 @@ const submitForm = async () => {
     if (err.response?.data?.errors) {
       errors.value = err.response.data.errors
     } else if (err.response?.data?.message) {
-      errors.value = err.response.data.message
       alert(err.response.data.message)
     } else if (err.request) {
       alert(err.request)
@@ -188,6 +194,22 @@ const deletePerson = async (id) => {
     await axios.delete(`${API_URL}/${id}`)
     fetchPersons()
   }
+}
+
+//搜尋人員
+const searchPersons = async () => {
+  if (!searchKeyword.value) {
+    fechPersons()
+    return
+  }
+  const res = await axios.get(`${API_URL}/search`, { params: { idNumber: searchKeyword.value } })
+  persons.value = res.data
+}
+
+//清除搜尋
+const cleanSearch = async () => {
+  searchKeyword.value = ''
+  fetchPersons()
 }
 
 onMounted(() => {

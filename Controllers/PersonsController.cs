@@ -100,5 +100,18 @@ namespace PersonalInfoApi.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string idNumber)
+        {
+            if (string.IsNullOrWhiteSpace(idNumber))
+            {
+                ModelState.AddModelError("IdNumber", "請輸入身分證字號");
+                return ValidationProblem(ModelState);
+            }
+
+            var person = await _context.Persons.Where(p => p.IdNumber.Contains(idNumber)).ToListAsync();
+            return Ok(person);
+        }
     }
 }
